@@ -11,6 +11,22 @@ O sistema vai ser uma aplicação web, e vai utilizar:
 - HTML
 - CSS
 
+## Como rodar
+Primeiro garanta que você tem o `php` instalado.
+Depois rode o composer para gerar as pastas do autoload:
+
+```bash
+composer dump-autoload
+```
+
+Para rodar o sistema basta executar:
+```bash
+php serve.php
+```
+
+> [!TIP]
+> Você pode alterar a porta e o host no arquivo `serve.php`
+
 ## Arquitetura
 ### Route
 Define a url que realiza a ação

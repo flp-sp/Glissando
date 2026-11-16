@@ -1,4 +1,9 @@
 <?php
+
+use App\Controllers\UserController;
+use App\Repositories\UserRepository;
+use App\Services\UserService;
+
 $method = $_SERVER["REQUEST_METHOD"];
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
@@ -15,6 +20,11 @@ elseif ($method == 'POST'&& $uri == '/login') {
 
 }
 elseif ($method == 'POST'&& $uri == '/signin') {
+    $repository = new UserRepository($pdo);
+    $service = new UserService($repository);
+    $controller = new UserController($service);
 
+    $controller->create();
+    exit();
 }
 ?>
