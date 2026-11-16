@@ -1,0 +1,78 @@
+body {
+    overflow: auto;
+    padding: 24px;
+}
+
+.auth-wrap {
+    width: min(420px, 100%);
+    padding: 32px 28px;
+    border: 1px solid rgba(233, 223, 204, 0.15);
+    border-radius: 20px;
+    background: rgba(85, 72, 101, 0.25);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    text-align: left;
+}
+
+.auth-wrap .sub {
+    margin: 0 0 4px;
+    text-align: center;
+}
+
+.auth-wrap h2 {
+    margin: 0 0 24px;
+    text-align: center;
+    font-size: 1.9rem;
+    color: var(--c5);
+}
+
+.campo {
+    margin-bottom: 16px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+    color: var(--c5);
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid rgba(233, 223, 204, 0.25);
+    border-radius: 12px;
+    background: rgba(53, 38, 48, 0.6);
+    color: var(--c5);
+    font: inherit;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    outline: none;
+    border-color: var(--c4);
+    box-shadow: 0 0 0 3px rgba(243, 163, 107, 0.2);
+}
+
+.acoes {
+    margin-top: 22px;
+    text-align: center;
+}
+
+.acoes .btn {
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.alt-link {
+    display: inline-block;
+    margin-top: 16px;
+    color: var(--c4);
+    text-decoration: none;
+}
+
+.alt-link:hover {
+    text-decoration: underline;
+}

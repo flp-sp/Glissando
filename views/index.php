@@ -33,7 +33,7 @@
         <p class="sub">Bem-vindo ao</p>
         <h1 id="brand">Glissando</h1>
 
-        <a class="btn" href="inicio.php">Iniciar</a>
+        <a class="btn" href="/login">Iniciar</a>
     </main>
 
     <script>
