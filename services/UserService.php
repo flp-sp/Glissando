@@ -14,5 +14,15 @@ class UserService{
 
         $this->userRepository->insert($user);
     }
+
+    public function authenticate(string $userName, string $passHash){
+        $creds = $this->userRepository->checkCreds($userName);
+
+        if(!$creds){
+            return false;
+        }
+
+        return password_verify($passHash, $creds["pass_hash"]);
+    }
 }
 ?>

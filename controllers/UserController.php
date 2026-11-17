@@ -20,5 +20,18 @@ class UserController{
             echo $e->getMessage();
         }
     }
+
+    public function login(){
+        try{
+            $userName = $_POST['username'] ?? '';
+            $password = $_POST['password'] ?? '';
+
+            if($this->userService->authenticate($userName, $password)){
+                echo 'chama';# Mudar para o endpoint das musicas 
+            }
+        } catch(\Exception $e){
+            echo $e->getMessage();
+        }
+    }
 }
 ?>

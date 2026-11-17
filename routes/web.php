@@ -17,7 +17,11 @@ elseif ($method == 'GET' && $uri == '/signin') {
     require __DIR__ . '/../views/auth/signin.php';
 }
 elseif ($method == 'POST'&& $uri == '/login') {
+    $repository = new UserRepository($pdo);
+    $service = new UserService($repository);
+    $controller = new UserController($service);
 
+    $controller->login();
 }
 elseif ($method == 'POST'&& $uri == '/signin') {
     $repository = new UserRepository($pdo);
