@@ -5,6 +5,7 @@
 - **Escopo permitido:** alterações visuais em `views/` (templates/markup) e em estilos dedicados em `public/assets/css/`, quando previamente delimitado pelo usuário.
 - **Não alterar a lógica por trás do código:** nada de regras de negócio, controllers, services, repositories, models, rotas, configuração, banco de dados, autenticação, validações de backend ou fluxo de dados.
 - Mexer **somente no visual e em elementos previamente delimitados pelo usuário** para cada tarefa. Se houver dúvida sobre o que está delimitado, perguntar antes de editar.
+- Se atente ao comentários `html` dos arquivos que for editar, geralmente vão ser notas para o agente.
 
 ## Estilo visual (manter o tom atual)
 - Preservar o estilo **simples, limpo e coerente** já presente no projeto.

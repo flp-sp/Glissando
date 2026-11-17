@@ -11,7 +11,8 @@ CREATE TABLE Musics (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     artist VARCHAR(150) NOT NULL,
-    cover_path VARCHAR(255),
+    cover_path VARCHAR(255) UNIQUE,
+    music_path VARCHAR(255) NOT NULL UNIQUE,
     views INT NOT NULL DEFAULT 0,
     datetime_uploaded TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fk_user_upload INT NOT NULL REFERENCES Users(id)

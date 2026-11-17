@@ -15,7 +15,7 @@ class UserController{
 
             $this->userService->createUser($name, $username, $email, $password);
 
-            echo 'chama!'; # Mudar para o endpoint das musicas 
+            header('Location: /login');
         } catch(\Exception $e){
             echo $e->getMessage();
         }
@@ -27,7 +27,11 @@ class UserController{
             $password = $_POST['password'] ?? '';
 
             if($this->userService->authenticate($userName, $password)){
-                echo 'chama';# Mudar para o endpoint das musicas 
+                session_start();
+                $_SESSION['user_name'] = $userName;
+                $_SESSION['password'] = $password;
+                
+                header('Location: /homepage');
             }
         } catch(\Exception $e){
             echo $e->getMessage();

@@ -1,0 +1,148 @@
+body {
+    overflow: auto;
+    padding: 24px;
+}
+
+.app-wrap {
+    width: min(520px, 100%);
+    padding: 32px 28px;
+    border: 1px solid rgba(233, 223, 204, 0.15);
+    border-radius: 20px;
+    background: rgba(85, 72, 101, 0.25);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+.app-header .sub {
+    margin: 0 0 4px;
+}
+
+.app-header h2 {
+    margin: 0 0 24px;
+    font-size: 1.9rem;
+    color: var(--c5);
+}
+
+.modal {
+    width: min(440px, calc(100% - 32px));
+    max-width: none;
+    padding: 0;
+    border: 1px solid rgba(233, 223, 204, 0.15);
+    border-radius: 20px;
+    background: rgba(53, 38, 48, 0.98);
+    color: var(--c5);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.4);
+}
+
+.modal::backdrop {
+    background: rgba(53, 38, 48, 0.75);
+    backdrop-filter: blur(3px);
+}
+
+.modal__card {
+    padding: 24px 28px 28px;
+}
+
+.modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.modal__header h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: var(--c5);
+}
+
+.modal__close {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(233, 223, 204, 0.25);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--c5);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: border-color .2s ease, color .2s ease;
+}
+
+.modal__close:hover {
+    border-color: var(--c4);
+    color: var(--c4);
+}
+
+.modal .campo {
+    margin-bottom: 16px;
+}
+
+.modal label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: .95rem;
+    color: var(--c5);
+}
+
+.modal input[type="text"],
+.modal input[type="file"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid rgba(233, 223, 204, 0.25);
+    border-radius: 12px;
+    background: rgba(53, 38, 48, 0.6);
+    color: var(--c5);
+    font: inherit;
+}
+
+.modal input[type="file"] {
+    padding: 10px;
+    border-style: dashed;
+    font-size: .85rem;
+}
+
+.modal input[type="file"]::file-selector-button {
+    margin-right: 10px;
+    padding: 6px 12px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--c3), var(--c4));
+    color: var(--c1);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.modal input[type="text"]:focus,
+.modal input[type="file"]:focus {
+    outline: none;
+    border-color: var(--c4);
+    box-shadow: 0 0 0 3px rgba(243, 163, 107, 0.2);
+}
+
+.modal .acoes {
+    margin-top: 22px;
+}
+
+.modal .acoes .btn {
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 16px;
+    }
+
+    .app-wrap {
+        padding: 24px 20px;
+    }
+
+    .modal__card {
+        padding: 20px;
+    }
+}
