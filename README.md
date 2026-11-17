@@ -12,7 +12,8 @@ O sistema vai ser uma aplicação web, e vai utilizar:
 - CSS
 
 ## Como rodar
-Primeiro garanta que você tem o `php` instalado.
+Primeiro garanta que você tem o `php` instalado. Depois configure o seu .env seguindo o exemplo `.env.example` com as configurações do seu banco.
+
 Depois rode o composer para gerar as pastas do autoload:
 
 ```bash
