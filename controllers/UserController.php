@@ -21,6 +21,16 @@ class UserController{
         }
     }
 
+    public function getUserInfo(){
+        try{
+            $userName = $_GET['username'];
+
+            return $this->userService->searchUserByUserName($userName);
+        } catch(\Exception $e){
+            echo $e->getMessage();
+        }
+    }
+
     public function login(){
         try{
             $userName = $_POST['username'] ?? '';

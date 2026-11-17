@@ -15,6 +15,10 @@ class UserService{
         $this->userRepository->insert($user);
     }
 
+    public function searchUserByUserName(string $userName){
+        return $this->userRepository->getUserData($userName);        
+    }
+
     public function authenticate(string $userName, string $passHash){
         $creds = $this->userRepository->checkCreds($userName);
 

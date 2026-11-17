@@ -68,4 +68,24 @@ elseif ($method == 'GET' && preg_match('#^/musics/([a-f0-9]{32}\.(mp3|m4a|webm|o
 
     $controller->serveMusic($m[1]);
 }
+
+# Users page
+elseif ($method == 'GET'&& $uri == '/profile') {
+    $repository = new UserRepository($pdo);
+    $service = new UserService($repository);
+    $controller = new UserController($service);
+
+    $profileData = $controller->getUserInfo();
+    $profileUser = [
+            'id' => (int) $profileData['id'],
+            'name' => $profileData['name'],
+            'user_name' => $profileData['user_name'],
+            'datetime_created' => $profileData['datetime_created'],
+        ];
+    
+    $isOwner = true;
+    $profileMusics = [];
+
+    require __DIR__ .'/../views/profile/index.php';
+}
 ?>

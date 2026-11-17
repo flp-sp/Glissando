@@ -22,6 +22,28 @@ body {
     color: var(--c5);
 }
 
+.app-header__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.profile-link {
+    flex: none;
+    margin-top: 2px;
+    color: var(--c4);
+    font-size: .9rem;
+    text-decoration: none;
+    transition: color .2s ease;
+}
+
+.profile-link:hover,
+.profile-link:focus-visible {
+    color: var(--c5);
+    outline: none;
+}
+
 .modal {
     width: min(440px, calc(100% - 32px));
     max-width: none;
@@ -232,6 +254,11 @@ body {
 
     .app-wrap {
         padding: 24px 20px;
+    }
+
+    .app-header__top {
+        flex-direction: column;
+        gap: 10px;
     }
 
     .modal__card {

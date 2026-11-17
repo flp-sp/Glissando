@@ -21,8 +21,13 @@
 <body>
     <main class="app-wrap">
         <header class="app-header">
-            <p class="sub">Sua sessão está no compasso</p>
-            <h2>Olá, <?= $_SESSION['user_name'] ?></h2>
+            <div class="app-header__top">
+                <div>
+                    <p class="sub">Sua sessão está no compasso</p>
+                    <h2>Olá, <?= $_SESSION['user_name'] ?></h2>
+                </div>
+                <a class="profile-link" href="/profile?username=<?= urlencode($_SESSION['user_name'] ?? '') ?>">Meu perfil <span aria-hidden="true">&rarr;</span></a>
+            </div>
         </header>
 
         <button type="button" class="btn" id="upload-btn">Enviar música</button>
