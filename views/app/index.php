@@ -1,5 +1,12 @@
 <?php
     session_start();
+
+    $musics = [];
+    if (isset($pdo)) {
+        $repository = new \App\Repositories\MusicRepository($pdo);
+        $service = new \App\Services\MusicService($repository);
+        $musics = $service->getMusicsTab((int)($_GET['pagina'] ?? 1));
+    }
 ?>
 
 <!DOCTYPE html>
@@ -20,7 +27,45 @@
 
         <button type="button" class="btn" id="upload-btn">Enviar música</button>
 
-        <!-- deixe o resto da página vazia por enquanto, quero validar a função de fazer upload de músicas -->
+        <section class="library" aria-labelledby="library-title">
+            <div class="library__head">
+                <p class="sub">No repertório</p>
+                <h3 id="library-title">Sua trilha sonora</h3>
+            </div>
+
+            <?php if ($musics): ?>
+                <ul class="track-grid">
+                    <?php foreach ($musics as $music): ?>
+                        <?php
+                            $playerQuery = http_build_query([
+                                'id' => $music->id,
+                                'name' => $music->name,
+                                'artist' => $music->artist,
+                                'cover' => $music->coverPath ?? '',
+                                'music' => $music->musicPath,
+                            ]);
+                        ?>
+                        <li>
+                            <a class="track-card" href="/player?<?= htmlspecialchars($playerQuery) ?>">
+                                <span class="track-card__cover">
+                                    <?php if ($music->coverPath): ?>
+                                        <img src="/covers/<?= htmlspecialchars($music->coverPath) ?>" alt="Capa de <?= htmlspecialchars($music->name) ?>" loading="lazy">
+                                    <?php else: ?>
+                                        <span class="track-card__note" aria-hidden="true">♪</span>
+                                    <?php endif; ?>
+                                </span>
+                                <span class="track-card__info">
+                                    <strong class="track-card__name"><?= htmlspecialchars($music->name) ?></strong>
+                                    <span class="track-card__artist"><?= htmlspecialchars($music->artist) ?></span>
+                                </span>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php else: ?>
+                <p class="library__empty">Ainda não há faixas na trilha. Envie a primeira.</p>
+            <?php endif; ?>
+        </section>
     </main>
 
     <dialog id="upload-modal" class="modal" aria-labelledby="upload-title">

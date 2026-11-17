@@ -49,4 +49,23 @@ elseif ($method == 'POST'&& $uri == '/upload') {
     $controller->upload();
     require __DIR__ . '/../views/app/index.php';
 }
+elseif ($method == 'GET'&& $uri == '/player') {
+    require __DIR__ . '/../views/app/player.php';
+}
+
+# Serve musics
+elseif ($method == 'GET' && preg_match('#^/covers/([a-f0-9]{32}\.(jpg|png|webp))$#', $uri, $m)) {
+    $repository = new MusicRepository($pdo);
+    $service = new MusicService($repository);
+    $controller = new MusicController($service);
+    
+    $controller->serveCover($m[1]);
+}
+elseif ($method == 'GET' && preg_match('#^/musics/([a-f0-9]{32}\.(mp3|m4a|webm|ogg|wav|flac))$#', $uri, $m)) {
+    $repository = new MusicRepository($pdo);
+    $service = new MusicService($repository);
+    $controller = new MusicController($service);
+
+    $controller->serveMusic($m[1]);
+}
 ?>

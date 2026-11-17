@@ -12,6 +12,13 @@
 
         }
 
+        public function getMusicsTab(int $step){
+            if($step > 0){
+                $step--;
+            }
+            return $this->musicRepository->getMusics($step);
+        }    
+
         public function save(array $fileCover, array $fileMusic){
             $finfoCover = new \finfo(FILEINFO_MIME_TYPE);
             $mimeCover = $finfoCover->file($fileCover['tmp_name']);
