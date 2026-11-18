@@ -12,7 +12,9 @@
             public int $views,
             public DateTime $datetimeUpload,
             public int $fkUserUpload,
-            public string $musicPath
+            public string $musicPath,
+            public string $uploaderName
+            # likes
         ){}
     }
 ?>

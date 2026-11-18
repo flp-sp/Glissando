@@ -24,6 +24,14 @@
             }
         }
 
+        public function getUserMusics(string $userName){
+            try{
+                return $this->musicService->getUsersMusicArray($userName);           
+            } catch(\Exception $e){
+                echo $e->getMessage();
+            }
+        }
+
         public function serveCover(string $filename){
             $path = __DIR__ . '/../storage/covers/' . $filename;
 

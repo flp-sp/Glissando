@@ -19,6 +19,10 @@
             return $this->musicRepository->getMusics($step);
         }    
 
+        public function getUsersMusicArray(string $userName){
+            return $this->musicRepository->getUserMusics($userName);
+        }
+
         public function save(array $fileCover, array $fileMusic){
             $finfoCover = new \finfo(FILEINFO_MIME_TYPE);
             $mimeCover = $finfoCover->file($fileCover['tmp_name']);

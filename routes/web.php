@@ -75,6 +75,10 @@ elseif ($method == 'GET'&& $uri == '/profile') {
     $service = new UserService($repository);
     $controller = new UserController($service);
 
+    $musicRepository = new MusicRepository($pdo);
+    $musicService = new MusicService($musicRepository);
+    $musicController = new MusicController($musicService);
+
     $profileData = $controller->getUserInfo();
     $profileUser = [
             'id' => (int) $profileData['id'],
@@ -83,8 +87,8 @@ elseif ($method == 'GET'&& $uri == '/profile') {
             'datetime_created' => $profileData['datetime_created'],
         ];
     
-    $isOwner = true;
-    $profileMusics = [];
+    $isOwner = $_SESSION['user_name'] === $profileUser['user_name'];
+    $profileMusics = $musicController->getUserMusics($profileUser['user_name']);
 
     require __DIR__ .'/../views/profile/index.php';
 }

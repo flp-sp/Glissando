@@ -1,11 +1,14 @@
 <?php
     session_start();
 
+    $page = max(1, (int)($_GET['pagina'] ?? 1));
     $musics = [];
+    $hasNextPage = false;
     if (isset($pdo)) {
         $repository = new \App\Repositories\MusicRepository($pdo);
         $service = new \App\Services\MusicService($repository);
-        $musics = $service->getMusicsTab((int)($_GET['pagina'] ?? 1));
+        $musics = $service->getMusicsTab($page);
+        $hasNextPage = count($musics) === MAX_PER_PAGE;
     }
 ?>
 
@@ -64,11 +67,30 @@
                                     <span class="track-card__artist"><?= htmlspecialchars($music->artist) ?></span>
                                 </span>
                             </a>
+                            <a class="track-card__uploader" href="/profile?username=<?= urlencode($music->uploaderName) ?>">por @<?= htmlspecialchars($music->uploaderName) ?></a>
                         </li>
                     <?php endforeach; ?>
                 </ul>
             <?php else: ?>
                 <p class="library__empty">Ainda não há faixas na trilha. Envie a primeira.</p>
+            <?php endif; ?>
+
+            <?php if ($musics || $page > 1): ?>
+                <nav class="pagination" aria-label="Paginação da trilha">
+                    <?php if ($page > 1): ?>
+                        <a class="pagination__link" href="/homepage?pagina=<?= $page - 1 ?>">&larr; Anterior</a>
+                    <?php else: ?>
+                        <span class="pagination__link pagination__link--disabled" aria-disabled="true">&larr; Anterior</span>
+                    <?php endif; ?>
+
+                    <span class="pagination__current" aria-current="page">Página <?= $page ?></span>
+
+                    <?php if ($hasNextPage): ?>
+                        <a class="pagination__link" href="/homepage?pagina=<?= $page + 1 ?>">Próxima &rarr;</a>
+                    <?php else: ?>
+                        <span class="pagination__link pagination__link--disabled" aria-disabled="true">Próxima &rarr;</span>
+                    <?php endif; ?>
+                </nav>
             <?php endif; ?>
         </section>
     </main>
