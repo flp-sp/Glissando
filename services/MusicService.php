@@ -12,15 +12,29 @@
 
         }
 
-        public function getMusicsTab(int $step){
+        public function getMusicsTab(int $step, string $filter_order, string $order_orientation,
+                                        string $artist_filter, int $id_user_filter){
             if($step > 0){
                 $step--;
             }
-            return $this->musicRepository->getMusics($step);
+            
+            if(!$filter_order){$filter_order = 'datetime_uploaded';}
+
+            if(!$order_orientation){$order_orientation = 'DESC';}
+
+            if(!$artist_filter){$artist_filter = 'all';}
+
+            if(!$id_user_filter){$id_user_filter = 0;}
+            
+            return $this->musicRepository->getMusics($step, $filter_order, $order_orientation, $artist_filter, $id_user_filter);
         }    
 
         public function getUsersMusicArray(string $userName){
             return $this->musicRepository->getUserMusics($userName);
+        }
+
+        public function getColumnData(string $column){
+            return $this->musicRepository->fetchColumnData($column);
         }
 
         public function save(array $fileCover, array $fileMusic){

@@ -27,8 +27,8 @@
                             ':user_name' => $_SESSION['user_name']]);
         }
 
-        public function getMusics(int $step, $filter_order = 'datetime_uploaded', $order_orientation = 'DESC',
-                                    $artist_filter = 'all', $id_user_filter = 0){
+        public function getMusics(int $step, $filter_order, $order_orientation,
+                                    $artist_filter, $id_user_filter){
 
             $filters = [];
             $params = [];
@@ -51,14 +51,13 @@
             $sql = "SELECT Musics.*, Users.user_name AS uploader_name FROM Musics
                     INNER JOIN Users ON Musics.fk_user_upload = Users.id
                     $where
-                    ORDER BY :filter_order $order_orientation
+                    ORDER BY $filter_order $order_orientation
                     LIMIT :max_per_page OFFSET :step";
             
             $stmt = $this->pdo->prepare($sql);
 
             $params[':max_per_page'] = MAX_PER_PAGE;
             $params[':step'] = (MAX_PER_PAGE * $step);
-            $params[':filter_order'] = $filter_order;
 
             $stmt->execute($params);
 
@@ -83,6 +82,15 @@
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             return $this->dataToArray($rows);
+        }
+
+        public function fetchColumnData(string $column){
+            $sql = "SELECT $column FROM Musics";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         private function dataToArray(array $rows){

@@ -160,9 +160,96 @@ body {
 }
 
 .library__head h3 {
-    margin: 4px 0 20px;
+    margin: 4px 0 12px;
     font-size: 1.35rem;
     color: var(--c5);
+}
+
+.filters {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 14px 16px;
+    border: 1px solid rgba(233, 223, 204, 0.15);
+    border-radius: 14px;
+    background: rgba(53, 38, 48, 0.28);
+}
+
+.filters__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1 1 130px;
+    min-width: 0;
+}
+
+.filters__label {
+    font-size: .8rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--c4);
+    opacity: .85;
+}
+
+.filters__select {
+    width: 100%;
+    min-width: 0;
+    padding: 9px 12px;
+    border: 1px solid rgba(233, 223, 204, 0.25);
+    border-radius: 999px;
+    background: rgba(53, 38, 48, 0.6);
+    color: var(--c5);
+    font: inherit;
+    font-size: .9rem;
+    cursor: pointer;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.filters__select:hover {
+    border-color: var(--c4);
+}
+
+.filters__select:focus {
+    outline: none;
+    border-color: var(--c4);
+    box-shadow: 0 0 0 3px rgba(243, 163, 107, 0.2);
+}
+
+.filters__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: none;
+    padding-bottom: 2px;
+}
+
+.btn--small {
+    padding: 9px 20px;
+    font-size: .9rem;
+    letter-spacing: .04em;
+    box-shadow: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.btn--small:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(205, 91, 81, 0.35);
+}
+
+.filters__reset {
+    color: var(--c4);
+    font-size: .9rem;
+    text-decoration: none;
+    transition: color .2s ease;
+}
+
+.filters__reset:hover,
+.filters__reset:focus-visible {
+    color: var(--c5);
+    outline: none;
 }
 
 .track-grid {
@@ -325,6 +412,20 @@ a.pagination__link:focus-visible {
 
     .track-grid {
         gap: 16px;
+    }
+
+    .filters {
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .filters__field {
+        flex-basis: calc(50% - 5px);
+    }
+
+    .filters__actions {
+        flex: 1 1 100%;
+        justify-content: space-between;
     }
 
     .pagination {

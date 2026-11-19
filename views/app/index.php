@@ -2,12 +2,31 @@
     session_start();
 
     $page = max(1, (int)($_GET['pagina'] ?? 1));
+
+    // normalização dos filtros na view; a validação definitiva deve ficar no backend
+    $filterOrderOptions = ['datetime_uploaded', 'views', 'name', 'artist'];
+    $filterDirectionOptions = ['DESC', 'ASC'];
+
+    $rawOrder = is_string($_GET['ordem'] ?? null) ? $_GET['ordem'] : '';
+    $rawDirection = is_string($_GET['direcao'] ?? null) ? strtoupper($_GET['direcao']) : '';
+    $rawArtist = is_string($_GET['artista'] ?? null) ? $_GET['artista'] : 'all';
+    $rawUploader = $_GET['uploader'] ?? 0;
+
+    $filterOrder = in_array($rawOrder, $filterOrderOptions, true) ? $rawOrder : 'datetime_uploaded';
+    $filterDirection = in_array($rawDirection, $filterDirectionOptions, true) ? $rawDirection : 'DESC';
+    $filterArtist = is_scalar($rawArtist) ? (string) $rawArtist : 'all';
+    $filterUploader = is_scalar($rawUploader) ? (int) $rawUploader : 0;
+
     $musics = [];
+    $allArtists = [];
+    $allUploaderIds = [];
     $hasNextPage = false;
     if (isset($pdo)) {
         $repository = new \App\Repositories\MusicRepository($pdo);
         $service = new \App\Services\MusicService($repository);
-        $musics = $service->getMusicsTab($page);
+        $musics = $service->getMusicsTab($page, $filterOrder, $filterDirection, $filterArtist, $filterUploader);
+        $allArtists = $service->getColumnData('artist');
+        $allUploaderIds = $service->getColumnData('fk_user_upload');
         $hasNextPage = count($musics) === MAX_PER_PAGE;
     }
 ?>
@@ -40,6 +59,89 @@
                 <p class="sub">No repertório</p>
                 <h3 id="library-title">Sua trilha sonora</h3>
             </div>
+
+            <!-- filtros: os parâmetros são normalizados na view e repassados ao service; a validação definitiva deve ficar no backend -->
+            <?php
+                $filterArtists = [];
+                foreach ($allArtists as $artistRow) {
+                    $artistName = $artistRow['artist'] ?? '';
+                    if ($artistName !== '') {
+                        $filterArtists[$artistName] = $artistName;
+                    }
+                }
+                ksort($filterArtists, SORT_NATURAL | SORT_FLAG_CASE);
+
+                $uploaderNames = [];
+                foreach ($musics as $filterMusic) {
+                    $uploaderNames[$filterMusic->fkUserUpload] = $filterMusic->uploaderName;
+                }
+
+                $filterUploaders = [];
+                foreach ($allUploaderIds as $uploaderRow) {
+                    $uploaderId = (int) ($uploaderRow['fk_user_upload'] ?? 0);
+                    if ($uploaderId > 0) {
+                        $filterUploaders[$uploaderId] = $uploaderNames[$uploaderId] ?? ('Usuário #' . $uploaderId);
+                    }
+                }
+                ksort($filterUploaders, SORT_NATURAL);
+                $filterOrderLabels = [
+                    'datetime_uploaded' => 'Mais recentes',
+                    'views' => 'Mais ouvidas',
+                    'name' => 'Nome',
+                    'artist' => 'Artista',
+                ];
+                $filterDirectionLabels = [
+                    'DESC' => 'Decrescente &darr;',
+                    'ASC' => 'Crescente &uarr;',
+                ];
+                $filterQuery = http_build_query(array_diff_key($_GET, ['pagina' => true]));
+            ?>
+            <form class="filters" method="get" action="/homepage" aria-label="Afinar a trilha">
+                <div class="filters__field">
+                    <label class="filters__label" for="filter-order">Ordenar</label>
+                    <select class="filters__select" id="filter-order" name="ordem">
+                        <?php foreach ($filterOrderLabels as $value => $label): ?>
+                            <option value="<?= $value ?>" <?= $filterOrder === $value ? 'selected' : '' ?>><?= $label ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="filters__field">
+                    <label class="filters__label" for="filter-direction">Direção</label>
+                    <select class="filters__select" id="filter-direction" name="direcao">
+                        <?php foreach ($filterDirectionLabels as $value => $label): ?>
+                            <option value="<?= $value ?>" <?= $filterDirection === $value ? 'selected' : '' ?>><?= $label ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="filters__field">
+                    <label class="filters__label" for="filter-artist">Artista</label>
+                    <select class="filters__select" id="filter-artist" name="artista">
+                        <option value="all" <?= $filterArtist === 'all' ? 'selected' : '' ?>>Todos os artistas</option>
+                        <!-- coluna "artist" via getColumnData(); deduplicação visual aqui, DISTINCT pode ir no repository -->
+                        <?php foreach ($filterArtists as $artistName): ?>
+                            <option value="<?= htmlspecialchars($artistName) ?>" <?= $filterArtist === $artistName ? 'selected' : '' ?>><?= htmlspecialchars($artistName) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="filters__field">
+                    <label class="filters__label" for="filter-uploader">Enviado por</label>
+                    <select class="filters__select" id="filter-uploader" name="uploader">
+                        <option value="0" <?= $filterUploader === 0 ? 'selected' : '' ?>>Todos</option>
+                        <!-- ids via getColumnData('fk_user_upload'); nomes vêm da página atual, fallback para id -->
+                        <?php foreach ($filterUploaders as $filterId => $filterName): ?>
+                            <option value="<?= (int) $filterId ?>" <?= $filterUploader === (int) $filterId ? 'selected' : '' ?>><?= htmlspecialchars($filterName) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="filters__actions">
+                    <button type="submit" class="btn btn--small">Aplicar</button>
+                    <a class="filters__reset" href="/homepage">Limpar</a>
+                </div>
+            </form>
 
             <?php if ($musics): ?>
                 <ul class="track-grid">
@@ -77,8 +179,12 @@
 
             <?php if ($musics || $page > 1): ?>
                 <nav class="pagination" aria-label="Paginação da trilha">
+                    <?php
+                        $previousQuery = $filterQuery ? $filterQuery . '&pagina=' . ($page - 1) : 'pagina=' . ($page - 1);
+                        $nextQuery = $filterQuery ? $filterQuery . '&pagina=' . ($page + 1) : 'pagina=' . ($page + 1);
+                    ?>
                     <?php if ($page > 1): ?>
-                        <a class="pagination__link" href="/homepage?pagina=<?= $page - 1 ?>">&larr; Anterior</a>
+                        <a class="pagination__link" href="/homepage?<?= htmlspecialchars($previousQuery) ?>">&larr; Anterior</a>
                     <?php else: ?>
                         <span class="pagination__link pagination__link--disabled" aria-disabled="true">&larr; Anterior</span>
                     <?php endif; ?>
@@ -86,7 +192,7 @@
                     <span class="pagination__current" aria-current="page">Página <?= $page ?></span>
 
                     <?php if ($hasNextPage): ?>
-                        <a class="pagination__link" href="/homepage?pagina=<?= $page + 1 ?>">Próxima &rarr;</a>
+                        <a class="pagination__link" href="/homepage?<?= htmlspecialchars($nextQuery) ?>">Próxima &rarr;</a>
                     <?php else: ?>
                         <span class="pagination__link pagination__link--disabled" aria-disabled="true">Próxima &rarr;</span>
                     <?php endif; ?>
