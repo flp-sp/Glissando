@@ -1,0 +1,573 @@
+openapi: 3.0.3
+
+info:
+  title: Glissando API
+  version: 1.0.0
+  description: >
+    Especificação das rotas HTTP definidas em `routes/web.php`.
+    A aplicação é uma página HTML server-side: a maioria das rotas devolve markup,
+    redirecionamentos ou arquivos de mídia (capas e faixas). Os formulários usam
+    `application/x-www-form-urlencoded` e o upload de música usa `multipart/form-data`.
+    A sessão PHP (`PHPSESSID`) guarda o usuário autenticado e é necessária para
+    curtir faixas e enviar novas músicas.
+  contact:
+    name: Glissando
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Servidor local (php serve.php)
+
+tags:
+  - name: Páginas
+    description: Telas renderizadas pelo servidor (a abertura da música).
+  - name: Autenticação
+    description: Entrar, criar conta e afinar a sessão.
+  - name: Acervo
+    description: Trilha, player e envio de faixas.
+  - name: Curtidas
+    description: Registro de curtidas na trilha.
+  - name: Arquivos
+    description: Capas e áudio servidos diretamente do storage.
+  - name: Perfil
+    description: Vitrine do artista e sua setlist.
+  - name: Documentação
+    description: Partitura da API e o arquivo OpenAPI que a alimenta.
+
+paths:
+  /:
+    get:
+      tags: [Páginas]
+      summary: Página inicial (abertura)
+      description: Exibe a tela de boas-vindas com o link para /login.
+      operationId: getRoot
+      responses:
+        '200':
+          description: HTML da página inicial.
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /login:
+    get:
+      tags: [Autenticação]
+      summary: Formulário de login
+      operationId: getLogin
+      responses:
+        '200':
+          description: HTML do formulário de entrada.
+          content:
+            text/html:
+              schema:
+                type: string
+    post:
+      tags: [Autenticação]
+      summary: Autenticar usuário
+      description: >
+        Valida as credenciais e inicia a sessão PHP. Em caso de sucesso responde
+        com redirecionamento para /homepage; se as credenciais falharem, a resposta
+        permanece na página atual.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '302':
+          description: Login efetuado. Redireciona para /homepage.
+          headers:
+            Location:
+              description: Destino do redirecionamento.
+              schema:
+                type: string
+                example: /homepage
+            Set-Cookie:
+              description: Cookie de sessão PHP.
+              schema:
+                type: string
+                example: PHPSESSID=...; path=/
+        '200':
+          description: HTML da resposta quando não há redirecionamento (credenciais inválidas ou erro).
+          content:
+            text/html:
+              schema:
+                type: string
+            text/plain:
+              schema:
+                type: string
+
+  /signin:
+    get:
+      tags: [Autenticação]
+      summary: Formulário de criação de conta
+      operationId: getSignin
+      responses:
+        '200':
+          description: HTML do formulário de cadastro.
+          content:
+            text/html:
+              schema:
+                type: string
+    post:
+      tags: [Autenticação]
+      summary: Criar conta
+      description: Cadastra um novo usuário e redireciona para /login.
+      operationId: signin
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SigninRequest'
+      responses:
+        '302':
+          description: Conta criada. Redireciona para /login.
+          headers:
+            Location:
+              schema:
+                type: string
+                example: /login
+        '200':
+          description: HTML da resposta em caso de erro (mensagem da exceção).
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /homepage:
+    get:
+      tags: [Acervo]
+      summary: Acervo de músicas
+      description: >
+        Lista as faixas paginadas com filtros de ordenação, artista e usuário.
+        Os parâmetros são normalizados na view antes de chegarem ao service.
+      operationId: getHomepage
+      parameters:
+        - $ref: '#/components/parameters/Pagina'
+        - $ref: '#/components/parameters/Ordem'
+        - $ref: '#/components/parameters/Direcao'
+        - $ref: '#/components/parameters/Artista'
+        - $ref: '#/components/parameters/Uploader'
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: HTML do acervo com a grade de faixas, filtros e paginação.
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /upload:
+    post:
+      tags: [Acervo]
+      summary: Enviar nova faixa
+      description: >
+        Recebe a capa e o áudio, salva os arquivos no storage com nome aleatório
+        de 32 caracteres hexadecimais e cadastra a música. Em seguida redireciona
+        para /homepage.
+      operationId: uploadMusic
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadRequest'
+      responses:
+        '302':
+          description: Faixa adicionada. Redireciona para /homepage.
+          headers:
+            Location:
+              schema:
+                type: string
+                example: /homepage
+        '200':
+          description: HTML do acervo (a view é incluída logo após o envio) ou mensagem de erro.
+          content:
+            text/html:
+              schema:
+                type: string
+            text/plain:
+              schema:
+                type: string
+
+  /player:
+    get:
+      tags: [Acervo]
+      summary: Player de uma faixa
+      description: >
+        Exibe o player e registra a reprodução (incremento de views) quando `id`
+        é informado. Os metadados vêm da query string porque a rota é server-side.
+      operationId: getPlayer
+      parameters:
+        - name: id
+          in: query
+          required: false
+          description: Identificador da música; quando maior que zero registra a reprodução.
+          schema:
+            type: integer
+            example: 12
+        - name: name
+          in: query
+          required: false
+          description: Nome exibido da faixa.
+          schema:
+            type: string
+            example: Noite serena
+        - name: artist
+          in: query
+          required: false
+          description: Artista exibido.
+          schema:
+            type: string
+            example: Glissando
+        - name: cover
+          in: query
+          required: false
+          description: Nome do arquivo de capa em /covers.
+          schema:
+            type: string
+            example: 6f1a0c2b4d5e6f708192a3b4c5d6e7f8.jpg
+        - name: music
+          in: query
+          required: false
+          description: Nome do arquivo de áudio em /musics.
+          schema:
+            type: string
+            example: 0a1b2c3d4e5f60718293a4b5c6d7e8f9.mp3
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: HTML do player com o elemento de áudio.
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /like:
+    post:
+      tags: [Curtidas]
+      summary: Curtir uma faixa
+      description: >
+        Registra uma curtida usando o usuário da sessão (`$_SESSION['user_name']`)
+        e o `music_id` enviado no formulário. Após registrar, a view do acervo é
+        incluída na mesma resposta.
+      operationId: likeMusic
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LikeRequest'
+      responses:
+        '200':
+          description: HTML do acervo após registrar a curtida.
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /covers/{filename}:
+    get:
+      tags: [Arquivos]
+      summary: Servir capa da faixa
+      description: >
+        Entrega o arquivo de imagem armazenado em storage/covers. O nome do arquivo
+        deve ter 32 caracteres hexadecimais e extensão .jpg, .png ou .webp; outros
+        valores não casam com a rota.
+      operationId: serveCover
+      parameters:
+        - $ref: '#/components/parameters/CoverFilename'
+      responses:
+        '200':
+          description: Bytes da imagem (Cache-Control privado, 1 dia).
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: image/jpeg
+            Cache-Control:
+              schema:
+                type: string
+                example: private, max-age=86400
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+
+  /musics/{filename}:
+    get:
+      tags: [Arquivos]
+      summary: Servir áudio da faixa
+      description: >
+        Faz stream do arquivo em storage/musics com suporte a Range (206 Partial
+        Content). O nome deve ter 32 caracteres hexadecimais e extensão .mp3,
+        .m4a, .webm, .ogg, .wav ou .flac.
+      operationId: serveMusic
+      parameters:
+        - $ref: '#/components/parameters/MusicFilename'
+        - $ref: '#/components/parameters/Range'
+      responses:
+        '200':
+          description: Áudio completo.
+          headers:
+            Accept-Ranges:
+              schema:
+                type: string
+                example: bytes
+            Content-Type:
+              schema:
+                type: string
+                example: audio/mpeg
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+            audio/mp4:
+              schema:
+                type: string
+                format: binary
+            audio/webm:
+              schema:
+                type: string
+                format: binary
+            audio/ogg:
+              schema:
+                type: string
+                format: binary
+            audio/wav:
+              schema:
+                type: string
+                format: binary
+            audio/flac:
+              schema:
+                type: string
+                format: binary
+        '206':
+          description: Parte do áudio solicitada via cabeçalho Range.
+          headers:
+            Content-Range:
+              schema:
+                type: string
+                example: bytes 0-8191/441000
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '416':
+          description: Intervalo solicitado não pode ser atendido.
+          headers:
+            Content-Range:
+              schema:
+                type: string
+                example: bytes */441000
+
+  /profile:
+    get:
+      tags: [Perfil]
+      summary: Perfil do artista
+      description: >
+        Carrega os dados do usuário informado em `username` e a setlist enviada
+        por ele. Sem o parâmetro, a view usa o mínimo da sessão como fallback.
+      operationId: getProfile
+      parameters:
+        - name: username
+          in: query
+          required: false
+          description: Nome de usuário cujo perfil será exibido.
+          schema:
+            type: string
+            example: glissando
+      responses:
+        '200':
+          description: HTML do perfil (ou da tela "fora do compasso" quando não encontrado).
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /docs:
+    get:
+      tags: [Documentação]
+      summary: Documentação interativa
+      description: >
+        Carrega o Swagger UI via CDN. A interface consome a especificação em
+        /openapi.yaml; abra esta rota no navegador para explorar a API.
+      operationId: getDocs
+      responses:
+        '200':
+          description: HTML do Swagger UI.
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /openapi.yaml:
+    get:
+      tags: [Documentação]
+      summary: Especificação OpenAPI
+      description: >
+        Serve docs/openapi.yaml com `Content-Type: application/yaml`. O Swagger UI
+        em /docs busca esta rota em segundo plano; aberta diretamente no navegador,
+        o arquivo pode ser oferecido para download.
+      operationId: getOpenApiSpec
+      responses:
+        '200':
+          description: Conteúdo da especificação em YAML.
+          content:
+            application/yaml:
+              schema:
+                type: string
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: PHPSESSID
+      description: Sessão PHP iniciada no login.
+
+  parameters:
+    Pagina:
+      name: pagina
+      in: query
+      required: false
+      description: Página da listagem (mínimo 1).
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    Ordem:
+      name: ordem
+      in: query
+      required: false
+      description: Campo de ordenação da trilha.
+      schema:
+        type: string
+        default: datetime_uploaded
+        enum: [datetime_uploaded, views, name, artist]
+    Direcao:
+      name: direcao
+      in: query
+      required: false
+      description: Direção da ordenação (aceita minúsculas; a view normaliza).
+      schema:
+        type: string
+        default: DESC
+        enum: [DESC, ASC]
+    Artista:
+      name: artista
+      in: query
+      required: false
+      description: Filtro por artista; `all` não filtra.
+      schema:
+        type: string
+        default: all
+    Uploader:
+      name: uploader
+      in: query
+      required: false
+      description: ID de quem enviou a faixa; `0` não filtra.
+      schema:
+        type: integer
+        default: 0
+    CoverFilename:
+      name: filename
+      in: path
+      required: true
+      description: Nome do arquivo de capa.
+      schema:
+        type: string
+        pattern: '^[a-f0-9]{32}\.(jpg|png|webp)$'
+    MusicFilename:
+      name: filename
+      in: path
+      required: true
+      description: Nome do arquivo de áudio.
+      schema:
+        type: string
+        pattern: '^[a-f0-9]{32}\.(mp3|m4a|webm|ogg|wav|flac)$'
+    Range:
+      name: Range
+      in: header
+      required: false
+      description: >
+        Solicitação de intervalo em bytes, ex.: `bytes=0-8191` ou `bytes=-500`.
+      schema:
+        type: string
+        example: bytes=0-8191
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          description: Nome de usuário cadastrado.
+        password:
+          type: string
+          format: password
+          description: Senha do usuário.
+    SigninRequest:
+      type: object
+      required: [name, username, email, password]
+      properties:
+        name:
+          type: string
+          description: Nome real do usuário.
+        username:
+          type: string
+          description: Nome de usuário exibido no perfil.
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    UploadRequest:
+      type: object
+      required: [name, artist, cover, music]
+      properties:
+        name:
+          type: string
+          description: Nome da música.
+        artist:
+          type: string
+          description: Artista ou banda.
+        cover:
+          type: string
+          format: binary
+          description: Imagem de capa (jpeg, png ou webp).
+        music:
+          type: string
+          format: binary
+          description: Arquivo de áudio (mp3, m4a, webm, ogg, wav ou flac).
+    LikeRequest:
+      type: object
+      required: [music_id]
+      properties:
+        music_id:
+          type: integer
+          description: ID da faixa curtida.
+          example: 12

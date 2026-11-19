@@ -85,4 +85,15 @@ elseif ($method == 'GET'&& $uri == '/profile') {
 
     require __DIR__ .'/../views/profile/index.php';
 }
+
+# Swagger
+elseif ($method == 'GET' && $uri == '/docs') {
+    require __DIR__ . '/../docs/swagger.php';
+}
+
+elseif ($method == 'GET'&& $uri == '/openapi.yaml') {
+    header('Content-Type: application/yaml; charset=utf-8');
+    readfile(__DIR__ . '/../docs/openapi.yaml');
+    exit;
+}
 ?>

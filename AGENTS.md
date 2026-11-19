@@ -22,3 +22,10 @@
 - Antes de alterar, revisar as views e estilos relacionados para manter consistência.
 - Fazer mudanças pontuais e fáceis de revisar; não refatorar além do que foi pedido.
 - Se uma solicitação exigir tocar lógica/backend ou arquivos fora do escopo visual permitido (`views/` e estilos em `public/assets/css/`), **não executar**: explicar a restrição e sugerir o que pode ser feito no visual dentro do escopo.
+
+## Documentação da API (OpenAPI)
+- A especificação fica em `docs/openapi.yaml` e retrata as rotas de `routes/web.php` (exceção autorizada ao escopo visual).
+- **Sempre que uma rota for adicionada, alterada ou removida em `routes/web.php`, atualizar `docs/openapi.yaml` na mesma mudança**: path, método, parâmetros (query/path/header), corpo do formulário, respostas e autenticação.
+- Ao alterar um formulário em `views/` que faz POST para uma rota existente, conferir se os campos enviados continuam batendo com o schema correspondente em `components/schemas` e atualizar a documentação se necessário.
+- Manter a especificação em pt-BR, com `openapi: 3.0.3` e YAML válido; usar componentes reutilizáveis para parâmetros e schemas repetidos.
+- Não documentar rotas que não existam em `routes/web.php` (ex.: arquivos estáticos servidos pelo PHP embutido).
