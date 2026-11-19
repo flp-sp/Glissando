@@ -93,6 +93,21 @@
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
+        public function incrementViewCount(int $musicId){
+            $sql = "SELECT views FROM Musics WHERE id = $musicId";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+
+            $previousViewCount = $stmt->fetch(PDO::FETCH_ASSOC);
+            $previousViewCount = $previousViewCount['views'];
+            $previousViewCount++;
+
+            $sql = "UPDATE Musics SET views = $previousViewCount WHERE id = :id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':id' => $musicId]);
+        }
+
         private function dataToArray(array $rows){
             return array_map(fn(array $row) => new Music(
                 id: (int) $row['id'],

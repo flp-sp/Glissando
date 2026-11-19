@@ -3,6 +3,14 @@
     $artist = $_GET['artist'] ?? 'Artista desconhecido';
     $cover = $_GET['cover'] ?? '';
     $music = $_GET['music'] ?? '';
+    $id = (int) ($_GET['id'] ?? 0);
+
+    // o registro da reprodução é feito pelo MusicService (lógica de domínio, fora da view)
+    if ($id > 0 && isset($pdo)) {
+        $repository = new \App\Repositories\MusicRepository($pdo);
+        $service = new \App\Services\MusicService($repository);
+        $service->registerView($id);
+    }
 ?>
 
 <!DOCTYPE html>

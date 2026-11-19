@@ -29,6 +29,15 @@ class UserRepository{
         return $stmt->fetch();
     }
 
+    public function fetchUserById(int $userId){
+        $sql = "SELECT user_name FROM Users WHERE id = $userId";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        
+        return $stmt->fetch();
+    }
+
     public function checkCreds(string $userName){
         $sql = "SELECT user_name, pass_hash FROM Users WHERE user_name = :user_name";
         $stmt = $this->pdo->prepare($sql);

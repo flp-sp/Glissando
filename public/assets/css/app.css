@@ -329,6 +329,34 @@ body {
     color: var(--c4);
 }
 
+.track-card__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.track-card__stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border: 1px solid rgba(233, 223, 204, 0.15);
+    border-radius: 999px;
+    background: rgba(85, 72, 101, 0.25);
+    color: var(--c5);
+    font-size: .8rem;
+    line-height: 1.2;
+}
+
+.track-card__stat > span:first-child {
+    color: var(--c4);
+}
+
+.track-card__stat--likes {
+    opacity: .6;
+}
+
 .track-card__uploader {
     margin-top: 8px;
     color: var(--c4);

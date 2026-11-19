@@ -20,10 +20,12 @@
     $musics = [];
     $allArtists = [];
     $allUploaderIds = [];
+    $userService = null;
     $hasNextPage = false;
     if (isset($pdo)) {
         $repository = new \App\Repositories\MusicRepository($pdo);
         $service = new \App\Services\MusicService($repository);
+        $userService = new \App\Services\UserService(new \App\Repositories\UserRepository($pdo));
         $musics = $service->getMusicsTab($page, $filterOrder, $filterDirection, $filterArtist, $filterUploader);
         $allArtists = $service->getColumnData('artist');
         $allUploaderIds = $service->getColumnData('fk_user_upload');
@@ -79,9 +81,16 @@
                 $filterUploaders = [];
                 foreach ($allUploaderIds as $uploaderRow) {
                     $uploaderId = (int) ($uploaderRow['fk_user_upload'] ?? 0);
-                    if ($uploaderId > 0) {
-                        $filterUploaders[$uploaderId] = $uploaderNames[$uploaderId] ?? ('Usuário #' . $uploaderId);
+                    if ($uploaderId <= 0) {
+                        continue;
                     }
+
+                    $userName = $uploaderNames[$uploaderId] ?? null;
+                    if ($userName === null && $userService !== null) {
+                        $userData = $userService->getUserById($uploaderId);
+                        $userName = is_array($userData) ? ($userData['user_name'] ?? null) : null;
+                    }
+                    $filterUploaders[$uploaderId] = $userName ?? ('Usuário #' . $uploaderId);
                 }
                 ksort($filterUploaders, SORT_NATURAL);
                 $filterOrderLabels = [
@@ -130,7 +139,7 @@
                     <label class="filters__label" for="filter-uploader">Enviado por</label>
                     <select class="filters__select" id="filter-uploader" name="uploader">
                         <option value="0" <?= $filterUploader === 0 ? 'selected' : '' ?>>Todos</option>
-                        <!-- ids via getColumnData('fk_user_upload'); nomes vêm da página atual, fallback para id -->
+                        <!-- ids via getColumnData('fk_user_upload'); nomes via UserService::getUserById(), fallback para id -->
                         <?php foreach ($filterUploaders as $filterId => $filterName): ?>
                             <option value="<?= (int) $filterId ?>" <?= $filterUploader === (int) $filterId ? 'selected' : '' ?>><?= htmlspecialchars($filterName) ?></option>
                         <?php endforeach; ?>
@@ -167,6 +176,17 @@
                                 <span class="track-card__info">
                                     <strong class="track-card__name"><?= htmlspecialchars($music->name) ?></strong>
                                     <span class="track-card__artist"><?= htmlspecialchars($music->artist) ?></span>
+                                    <span class="track-card__stats">
+                                        <span class="track-card__stat" aria-label="<?= (int) $music->views ?> reproduções">
+                                            <span aria-hidden="true">&#9654;</span>
+                                            <span><?= (int) $music->views ?></span>
+                                        </span>
+                                        <!-- placeholder: o model ainda não tem o campo de likes (ver "# likes" em models/Music.php) -->
+                                        <span class="track-card__stat track-card__stat--likes" title="Curtidas em breve" aria-label="Curtidas: em breve">
+                                            <span aria-hidden="true">&#9829;</span>
+                                            <span>&mdash;</span>
+                                        </span>
+                                    </span>
                                 </span>
                             </a>
                             <a class="track-card__uploader" href="/profile?username=<?= urlencode($music->uploaderName) ?>">por @<?= htmlspecialchars($music->uploaderName) ?></a>

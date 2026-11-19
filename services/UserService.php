@@ -19,6 +19,11 @@ class UserService{
         return $this->userRepository->getUserData($userName);        
     }
 
+    public function getUserById(int $userId){
+        return $this->userRepository->fetchUserById($userId);
+    }
+
+
     public function authenticate(string $userName, string $passHash){
         $creds = $this->userRepository->checkCreds($userName);
 

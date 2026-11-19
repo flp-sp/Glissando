@@ -37,6 +37,10 @@
             return $this->musicRepository->fetchColumnData($column);
         }
 
+        public function registerView(int $id){
+            $this->musicRepository->incrementViewCount($id);
+        }
+
         public function save(array $fileCover, array $fileMusic){
             $finfoCover = new \finfo(FILEINFO_MIME_TYPE);
             $mimeCover = $finfoCover->file($fileCover['tmp_name']);
