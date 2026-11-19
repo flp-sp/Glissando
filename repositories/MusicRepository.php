@@ -28,7 +28,7 @@
         }
 
         public function getMusics(int $step, $filter_order = 'datetime_uploaded', $order_orientation = 'DESC',
-                                    $artist_filter = 'all'){
+                                    $artist_filter = 'all', $id_user_filter = 0){
 
             $filters = [];
             $params = [];
@@ -37,6 +37,11 @@
             if($artist_filter != 'all'){
                 $filters[] = 'artist = :artist'; 
                 $params[':artist'] = $artist_filter;
+            }
+
+            if($id_user_filter != 0){
+                $filters[] = 'fk_user_upload = :fk_user_upload';
+                $params[':fk_user_upload'] = $id_user_filter;
             }
 
             if($filters){
@@ -59,7 +64,12 @@
 
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            return $this->dataToArray($rows);
+            if($rows){
+                return $this->dataToArray($rows);
+            }
+            else{
+                return [];
+            }
         }
 
         public function getUserMusics(string $userName){

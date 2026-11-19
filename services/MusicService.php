@@ -39,6 +39,7 @@
                 // Áudio
                 'audio/mpeg'   => 'mp3',
                 'audio/mp4'    => 'm4a',
+                'video/mp4'    => 'm4a', 
                 'audio/x-m4a'  => 'm4a',
                 'audio/webm'   => 'webm',
                 'video/webm'   => 'webm',
