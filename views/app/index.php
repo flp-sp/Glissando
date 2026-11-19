@@ -21,11 +21,16 @@
     $allArtists = [];
     $allUploaderIds = [];
     $userService = null;
+    $likeService = null;
+    $currentUserId = 0;
     $hasNextPage = false;
     if (isset($pdo)) {
         $repository = new \App\Repositories\MusicRepository($pdo);
         $service = new \App\Services\MusicService($repository);
         $userService = new \App\Services\UserService(new \App\Repositories\UserRepository($pdo));
+        $likeService = new \App\Services\LikeService(new \App\Repositories\LikesRepository($pdo));
+        $currentUser = $userService->searchUserByUserName($_SESSION['user_name'] ?? '');
+        $currentUserId = is_array($currentUser) ? (int) ($currentUser['id'] ?? 0) : 0;
         $musics = $service->getMusicsTab($page, $filterOrder, $filterDirection, $filterArtist, $filterUploader);
         $allArtists = $service->getColumnData('artist');
         $allUploaderIds = $service->getColumnData('fk_user_upload');
@@ -163,6 +168,7 @@
                                 'cover' => $music->coverPath ?? '',
                                 'music' => $music->musicPath,
                             ]);
+                            $likeCount = $likeService ? (int) $likeService->getMusicLikes($music->id) : 0;
                         ?>
                         <li>
                             <a class="track-card" href="/player?<?= htmlspecialchars($playerQuery) ?>">
@@ -181,15 +187,20 @@
                                             <span aria-hidden="true">&#9654;</span>
                                             <span><?= (int) $music->views ?></span>
                                         </span>
-                                        <!-- placeholder: o model ainda não tem o campo de likes (ver "# likes" em models/Music.php) -->
-                                        <span class="track-card__stat track-card__stat--likes" title="Curtidas em breve" aria-label="Curtidas: em breve">
+                                        <span class="track-card__stat track-card__stat--likes" aria-label="<?= $likeCount ?> curtidas">
                                             <span aria-hidden="true">&#9829;</span>
-                                            <span>&mdash;</span>
+                                            <span><?= $likeCount ?></span>
                                         </span>
                                     </span>
                                 </span>
                             </a>
                             <a class="track-card__uploader" href="/profile?username=<?= urlencode($music->uploaderName) ?>">por @<?= htmlspecialchars($music->uploaderName) ?></a>
+                            <form class="track-card__like-form" action="/like" method="post">
+                                <input type="hidden" name="music_id" value="<?= (int) $music->id ?>">
+                                <button type="submit" class="track-card__like" <?= $currentUserId > 0 ? '' : 'disabled title="Entre para curtir"' ?> aria-label="Curtir <?= htmlspecialchars($music->name) ?>">
+                                    <span aria-hidden="true">&#9829;</span> Curtir
+                                </button>
+                            </form>
                         </li>
                     <?php endforeach; ?>
                 </ul>

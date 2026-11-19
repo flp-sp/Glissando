@@ -354,7 +354,39 @@ body {
 }
 
 .track-card__stat--likes {
-    opacity: .6;
+    opacity: .85;
+}
+
+.track-card__like-form {
+    margin-top: 8px;
+}
+
+.track-card__like {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid rgba(233, 223, 204, 0.25);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--c4);
+    font: inherit;
+    font-size: .85rem;
+    cursor: pointer;
+    transition: border-color .2s ease, background .2s ease, color .2s ease;
+}
+
+.track-card__like:hover:not(:disabled),
+.track-card__like:focus-visible:not(:disabled) {
+    border-color: var(--c4);
+    background: rgba(243, 163, 107, 0.08);
+    color: var(--c5);
+    outline: none;
+}
+
+.track-card__like:disabled {
+    opacity: .45;
+    cursor: not-allowed;
 }
 
 .track-card__uploader {
