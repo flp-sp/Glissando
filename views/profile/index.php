@@ -24,6 +24,14 @@
     $profileSince = !empty($profileUser['datetime_created'])
         ? date('d/m/Y', strtotime($profileUser['datetime_created']))
         : '';
+
+    // a rota/controller pode fornecer a contagem; se não fornecer, a view busca pelo id do dono do perfil
+    if (!isset($subscriberCount)) {
+        $subscriberCount = 0;
+        if (isset($subscriptionService) && !empty($profileUser['id'])) {
+            $subscriberCount = (int) $subscriptionService->getSubscriptionNumber((int) $profileUser['id']);
+        }
+    }
 ?>
 
 <!DOCTYPE html>
@@ -52,7 +60,13 @@
                             <?php if ($profileSince): ?>
                                 <span class="profile__since"> &middot; na cena desde <?= htmlspecialchars($profileSince) ?></span>
                             <?php endif; ?>
+                            <span class="profile__subscribers"> &middot; <?= $subscriberCount ?> <?= $subscriberCount === 1 ? 'inscrito' : 'inscritos' ?></span>
                         </p>
+                        <?php if (!$isOwner): ?>
+                            <form class="profile__subscribe-form" action="/subscribe?username=<?= htmlspecialchars(urlencode($profileHandle), ENT_QUOTES, 'UTF-8') ?>" method="post">
+                                <button type="submit" class="btn btn--small">Inscrever-se</button>
+                            </form>
+                        <?php endif; ?>
                     </div>
                 </div>
             </header>

@@ -68,9 +68,14 @@ body {
     color: var(--c4);
 }
 
-.profile__since {
+.profile__since,
+.profile__subscribers {
     color: var(--c5);
     opacity: .65;
+}
+
+.profile__subscribe-form {
+    margin-top: 12px;
 }
 
 .profile__panel,

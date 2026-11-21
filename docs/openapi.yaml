@@ -9,7 +9,7 @@ info:
     redirecionamentos ou arquivos de mídia (capas e faixas). Os formulários usam
     `application/x-www-form-urlencoded` e o upload de música usa `multipart/form-data`.
     A sessão PHP (`PHPSESSID`) guarda o usuário autenticado e é necessária para
-    curtir faixas e enviar novas músicas.
+    curtir faixas, inscrever-se em outros usuários e enviar novas músicas.
   contact:
     name: Glissando
   license:
@@ -28,6 +28,8 @@ tags:
     description: Trilha, player e envio de faixas.
   - name: Curtidas
     description: Registro de curtidas na trilha.
+  - name: Inscrições
+    description: Inscrição em outros artistas da comunidade.
   - name: Arquivos
     description: Capas e áudio servidos diretamente do storage.
   - name: Perfil
@@ -276,6 +278,30 @@ paths:
               schema:
                 type: string
 
+  /subscribe:
+    post:
+      tags: [Inscrições]
+      summary: Inscrever-se em outro usuário
+      description: >
+        Registra a inscrição do usuário da sessão (`$_SESSION['user_name']`) no
+        perfil informado em `username`. O formulário envia POST sem corpo e o nome
+        do usuário seguido vai na query string. Inscrições repetidas são ignoradas.
+        Em seguida redireciona para /profile?username=<nome seguido>.
+      operationId: subscribeUser
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/UsernameToFollow'
+      responses:
+        '302':
+          description: Inscrição registrada. Redireciona para o perfil do usuário seguido.
+          headers:
+            Location:
+              description: Destino do redirecionamento.
+              schema:
+                type: string
+                example: /profile?username=glissando
+
   /covers/{filename}:
     get:
       tags: [Arquivos]
@@ -387,17 +413,12 @@ paths:
       tags: [Perfil]
       summary: Perfil do artista
       description: >
-        Carrega os dados do usuário informado em `username` e a setlist enviada
-        por ele. Sem o parâmetro, a view usa o mínimo da sessão como fallback.
+        Carrega os dados do usuário informado em `username`, a setlist enviada
+        por ele e a quantidade de inscritos. Sem o parâmetro, a view usa o mínimo
+        da sessão como fallback.
       operationId: getProfile
       parameters:
-        - name: username
-          in: query
-          required: false
-          description: Nome de usuário cujo perfil será exibido.
-          schema:
-            type: string
-            example: glissando
+        - $ref: '#/components/parameters/Username'
       responses:
         '200':
           description: HTML do perfil (ou da tela "fora do compasso" quando não encontrado).
@@ -448,6 +469,22 @@ components:
       description: Sessão PHP iniciada no login.
 
   parameters:
+    Username:
+      name: username
+      in: query
+      required: false
+      description: Nome de usuário cujo perfil será exibido.
+      schema:
+        type: string
+        example: glissando
+    UsernameToFollow:
+      name: username
+      in: query
+      required: true
+      description: Nome de usuário que receberá a inscrição.
+      schema:
+        type: string
+        example: glissando
     Pagina:
       name: pagina
       in: query
