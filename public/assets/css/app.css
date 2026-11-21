@@ -389,6 +389,12 @@ body {
     cursor: not-allowed;
 }
 
+.track-card__like--active {
+    border-color: rgba(243, 163, 107, .55);
+    background: rgba(243, 163, 107, .12);
+    color: var(--c5);
+}
+
 .track-card__uploader {
     margin-top: 8px;
     color: var(--c4);

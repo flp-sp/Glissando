@@ -169,6 +169,8 @@
                                 'music' => $music->musicPath,
                             ]);
                             $likeCount = $likeService ? (int) $likeService->getMusicLikes($music->id) : 0;
+                            $userLiked = $likeService && $currentUserId > 0
+                                && $likeService->userHasLiked($currentUserId, $music->id);
                         ?>
                         <li>
                             <a class="track-card" href="/player?<?= htmlspecialchars($playerQuery) ?>">
@@ -195,10 +197,10 @@
                                 </span>
                             </a>
                             <a class="track-card__uploader" href="/profile?username=<?= urlencode($music->uploaderName) ?>">por @<?= htmlspecialchars($music->uploaderName) ?></a>
-                            <form class="track-card__like-form" action="/like" method="post">
+                            <form class="track-card__like-form" action="<?= $userLiked ? '/dislike' : '/like' ?>" method="post">
                                 <input type="hidden" name="music_id" value="<?= (int) $music->id ?>">
-                                <button type="submit" class="track-card__like" <?= $currentUserId > 0 ? '' : 'disabled title="Entre para curtir"' ?> aria-label="Curtir <?= htmlspecialchars($music->name) ?>">
-                                    <span aria-hidden="true">&#9829;</span> Curtir
+                                <button type="submit" class="track-card__like <?= $userLiked ? 'track-card__like--active' : '' ?>" <?= $currentUserId > 0 ? '' : 'disabled title="Entre para curtir"' ?> aria-label="<?= $userLiked ? 'Descurtir' : 'Curtir' ?> <?= htmlspecialchars($music->name) ?>">
+                                    <span aria-hidden="true">&#9829;</span> <?= $userLiked ? 'Descurtir' : 'Curtir' ?>
                                 </button>
                             </form>
                         </li>

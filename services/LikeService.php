@@ -13,5 +13,13 @@
         public function getMusicLikes($musicId){
             return $this->likesRepository->fetchMusicLikes($musicId);
         }
+
+        public function dislikeMusic($userId, $musicId){
+            $this->likesRepository->removeLike($userId, $musicId);
+        }
+
+        public function userHasLiked($userId, $musicId){
+            return $this->likesRepository->userHasLiked($userId, $musicId);
+        }
     }
 ?>

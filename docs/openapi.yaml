@@ -9,7 +9,8 @@ info:
     redirecionamentos ou arquivos de mídia (capas e faixas). Os formulários usam
     `application/x-www-form-urlencoded` e o upload de música usa `multipart/form-data`.
     A sessão PHP (`PHPSESSID`) guarda o usuário autenticado e é necessária para
-    curtir faixas, inscrever-se em outros usuários e enviar novas músicas.
+    curtir/descurtir faixas, inscrever-se/cancelar inscrição em outros usuários
+    e enviar novas músicas.
   contact:
     name: Glissando
   license:
@@ -278,6 +279,31 @@ paths:
               schema:
                 type: string
 
+  /dislike:
+    post:
+      tags: [Curtidas]
+      summary: Descurtir uma faixa
+      description: >
+        Remove a curtida do usuário da sessão (`$_SESSION['user_name']`) na faixa
+        informada por `music_id`. Se não houver curtida, a operação é inofensiva.
+        Após remover, a view do acervo é incluída na mesma resposta.
+      operationId: dislikeMusic
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LikeRequest'
+      responses:
+        '200':
+          description: HTML do acervo após remover a curtida.
+          content:
+            text/html:
+              schema:
+                type: string
+
   /subscribe:
     post:
       tags: [Inscrições]
@@ -295,6 +321,29 @@ paths:
       responses:
         '302':
           description: Inscrição registrada. Redireciona para o perfil do usuário seguido.
+          headers:
+            Location:
+              description: Destino do redirecionamento.
+              schema:
+                type: string
+                example: /profile?username=glissando
+
+  /unsubscribe:
+    post:
+      tags: [Inscrições]
+      summary: Cancelar inscrição em outro usuário
+      description: >
+        Remove a inscrição do usuário da sessão (`$_SESSION['user_name']`) no
+        perfil informado em `username`. O nome do usuário vai na query string.
+        Em seguida redireciona para /profile?username=<nome do usuário>.
+      operationId: unsubscribeUser
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/UsernameToFollow'
+      responses:
+        '302':
+          description: Inscrição cancelada. Redireciona para o perfil do usuário.
           headers:
             Location:
               description: Destino do redirecionamento.
@@ -481,7 +530,7 @@ components:
       name: username
       in: query
       required: true
-      description: Nome de usuário que receberá a inscrição.
+      description: Nome de usuário do perfil alvo da inscrição (ou do cancelamento).
       schema:
         type: string
         example: glissando

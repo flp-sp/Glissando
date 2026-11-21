@@ -156,6 +156,20 @@ body {
     font-size: 1rem;
 }
 
+.btn--subtle {
+    background: transparent;
+    border: 1px solid rgba(233, 223, 204, .3);
+    color: var(--c5);
+    box-shadow: none;
+}
+
+.btn--subtle:hover {
+    background: rgba(243, 163, 107, .08);
+    border-color: var(--c4);
+    box-shadow: none;
+    color: var(--c5);
+}
+
 @media (max-width: 480px) {
     body {
         padding: 16px;

@@ -28,4 +28,24 @@
                             ':fk_id_music_chk' => $musicId,
                             ':fk_id_user_chk' => $userId]);
         }
+
+        public function removeLike($userId, $musicId){
+            $sql = 'DELETE FROM Likes
+                    WHERE fk_id_music = :fk_id_music AND fk_id_user = :fk_id_user';
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':fk_id_music'=> $musicId,
+                            ':fk_id_user' => $userId]);
+        }
+
+        public function userHasLiked($userId, $musicId){
+            $sql = 'SELECT COUNT(*) FROM Likes
+                    WHERE fk_id_music = :fk_id_music AND fk_id_user = :fk_id_user';
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':fk_id_music'=> $musicId,
+                            ':fk_id_user' => $userId]);
+
+            return (int) $stmt->fetchColumn() > 0;
+        }
     }

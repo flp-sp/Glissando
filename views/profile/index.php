@@ -18,6 +18,7 @@
     $profileUser = $profileUser ?? null;
     $isOwner = $isOwner ?? false;
     $profileMusics = $profileMusics ?? [];
+    $isSubscribed = $isSubscribed ?? false;
 
     $profileName = $profileUser['name'] ?? '';
     $profileHandle = $profileUser['user_name'] ?? '';
@@ -63,8 +64,10 @@
                             <span class="profile__subscribers"> &middot; <?= $subscriberCount ?> <?= $subscriberCount === 1 ? 'inscrito' : 'inscritos' ?></span>
                         </p>
                         <?php if (!$isOwner): ?>
-                            <form class="profile__subscribe-form" action="/subscribe?username=<?= htmlspecialchars(urlencode($profileHandle), ENT_QUOTES, 'UTF-8') ?>" method="post">
-                                <button type="submit" class="btn btn--small">Inscrever-se</button>
+                            <form class="profile__subscribe-form" action="<?= $isSubscribed ? '/unsubscribe' : '/subscribe' ?>?username=<?= htmlspecialchars(urlencode($profileHandle), ENT_QUOTES, 'UTF-8') ?>" method="post">
+                                <button type="submit" class="btn btn--small <?= $isSubscribed ? 'btn--subtle' : '' ?>">
+                                    <?= $isSubscribed ? 'Cancelar inscrição' : 'Inscrever-se' ?>
+                                </button>
                             </form>
                         <?php endif; ?>
                     </div>

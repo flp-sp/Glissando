@@ -28,4 +28,24 @@
                             ':fk_id_followed_chk' => $idFollowed,
                             ':fk_id_following_chk' => $idFollowing]);
         }
+
+        public function removeSubscription($idFollowed, $idFollowing){
+            $sql = 'DELETE FROM Subscriptions
+                    WHERE fk_id_followed = :fk_id_followed AND fk_id_following = :fk_id_following';
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':fk_id_followed'=> $idFollowed,
+                            ':fk_id_following' => $idFollowing]);
+        }
+
+        public function isSubscribed($idFollowed, $idFollowing){
+            $sql = 'SELECT COUNT(*) FROM Subscriptions
+                    WHERE fk_id_followed = :fk_id_followed AND fk_id_following = :fk_id_following';
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':fk_id_followed'=> $idFollowed,
+                            ':fk_id_following' => $idFollowing]);
+
+            return (int) $stmt->fetchColumn() > 0;
+        }
     }

@@ -87,6 +87,10 @@ elseif ($method == 'GET'&& $uri == '/profile') {
     $profileMusics = $musicController->getUserMusics($profileUser['user_name']);
     $subscriberCount = $subscriptionController->getSubscriptionNumber((int) $profileUser['id']);
 
+    $viewer = $userService->searchUserByUserName($_SESSION['user_name'] ?? '');
+    $isSubscribed = is_array($viewer)
+        && $subscriptionController->isSubscribed((int) $profileUser['id'], (int) $viewer['id']);
+
     require __DIR__ .'/../views/profile/index.php';
 }
 
@@ -97,11 +101,24 @@ elseif ($method == 'POST'&& $uri == '/like') {
     $likeController->likeMusic((int)$user['id'], (int)$_POST['music_id']);
     require __DIR__ . '/../views/app/index.php';
 }
+elseif ($method == 'POST'&& $uri == '/dislike') {
+    $user = $userService->searchUserByUserName($_SESSION['user_name']);
+
+    $likeController->dislikeMusic((int)$user['id'], (int)$_POST['music_id']);
+    require __DIR__ . '/../views/app/index.php';
+}
 elseif ($method == 'POST'&& $uri == '/subscribe') { 
     $user = $userService->searchUserByUserName($_SESSION['user_name']);
     $followed = $userService->searchUserByUserName($_GET['username']);
 
     $subscriptionController->subscribeUser((int)$followed['id'], (int)$user['id']);
+    header('Location: /profile?username=' . urlencode($followed['user_name']));
+}
+elseif ($method == 'POST'&& $uri == '/unsubscribe') {
+    $user = $userService->searchUserByUserName($_SESSION['user_name']);
+    $followed = $userService->searchUserByUserName($_GET['username']);
+
+    $subscriptionController->unsubscribeUser((int)$followed['id'], (int)$user['id']);
     header('Location: /profile?username=' . urlencode($followed['user_name']));
 }
 
