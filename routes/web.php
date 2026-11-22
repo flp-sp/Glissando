@@ -9,11 +9,13 @@ use App\Repositories\LikesRepository;
 use App\Repositories\MusicRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\SubscriptionRepository;
+use App\Repositories\DashboardRepository;
 
 use App\Services\LikeService;
 use App\Services\MusicService;
 use App\Services\UserService;
 use App\Services\SubscriptionService;
+use App\Services\DashboardService;
 
 $method = $_SERVER["REQUEST_METHOD"];
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -86,6 +88,24 @@ elseif ($method == 'GET'&& $uri == '/profile') {
     $isOwner = $_SESSION['user_name'] === $profileUser['user_name'];
     $profileMusics = $musicController->getUserMusics($profileUser['user_name']);
     $subscriberCount = $subscriptionController->getSubscriptionNumber((int) $profileUser['id']);
+
+    $dashboardData = [
+        'totalViews'  => 0,
+        'meanViews'   => 0,
+        'meanLikes'   => 0,
+        'subscribers' => $subscriberCount,
+        'topMusics'   => [],
+    ];
+
+    if ($isOwner) {
+        $dashboardService = new DashboardService(new DashboardRepository($pdo));
+        $artistId = (int) $profileUser['id'];
+
+        $dashboardData['totalViews'] = $dashboardService->getTotalViewsByUser($artistId);
+        $dashboardData['meanViews'] = $dashboardService->getMeanViewsByUser($artistId);
+        $dashboardData['meanLikes'] = $dashboardService->getMeanLikesByUser($artistId);
+        $dashboardData['topMusics'] = $dashboardService->getTopMusicsByViews($artistId);
+    }
 
     $viewer = $userService->searchUserByUserName($_SESSION['user_name'] ?? '');
     $isSubscribed = is_array($viewer)

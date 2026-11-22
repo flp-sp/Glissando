@@ -462,9 +462,10 @@ paths:
       tags: [Perfil]
       summary: Perfil do artista
       description: >
-        Carrega os dados do usuário informado em `username`, a setlist enviada
-        por ele e a quantidade de inscritos. Sem o parâmetro, a view usa o mínimo
-        da sessão como fallback.
+        Carrega os dados do usuário informado em `username`, a setlist enviada,
+        a quantidade de inscritos e, para o dono do perfil, os indicadores do
+        painel (visualizações, médias de views e curtidas, faixas mais ouvidas).
+        Sem o parâmetro, a view usa o mínimo da sessão como fallback.
       operationId: getProfile
       parameters:
         - $ref: '#/components/parameters/Username'

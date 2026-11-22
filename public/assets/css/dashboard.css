@@ -1,0 +1,117 @@
+.dashboard {
+    margin-top: 8px;
+}
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 0 0 20px;
+    padding: 0;
+    list-style: none;
+}
+
+.kpi-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px;
+    border: 1px solid rgba(233, 223, 204, 0.15);
+    border-radius: 16px;
+    background: rgba(53, 38, 48, 0.35);
+}
+
+.kpi-card__icon {
+    color: var(--c4);
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.kpi-card__label {
+    color: var(--c4);
+    font-size: .78rem;
+    letter-spacing: .08em;
+    opacity: .85;
+    text-transform: uppercase;
+}
+
+.kpi-card__value {
+    color: var(--c5);
+    font-size: 1.7rem;
+    line-height: 1.15;
+}
+
+.kpi-card__hint {
+    color: var(--c5);
+    font-size: .78rem;
+    opacity: .6;
+}
+
+.dashboard__charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.chart-card {
+    padding: 18px;
+    border: 1px solid rgba(233, 223, 204, 0.15);
+    border-radius: 16px;
+    background: rgba(53, 38, 48, 0.28);
+}
+
+.chart-card .sub {
+    margin: 0 0 4px;
+}
+
+.chart-card h4 {
+    margin: 0 0 14px;
+    color: var(--c5);
+    font-size: 1.05rem;
+}
+
+.chart-card__canvas {
+    position: relative;
+    height: 190px;
+}
+
+.chart-card__canvas--doughnut {
+    height: 210px;
+}
+
+.dashboard__empty {
+    margin: 0;
+    padding: 32px 16px;
+    border: 1px dashed rgba(233, 223, 204, 0.25);
+    border-radius: 16px;
+    color: var(--c5);
+    opacity: .8;
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .kpi-card {
+        padding: 12px;
+    }
+
+    .kpi-card__value {
+        font-size: 1.35rem;
+    }
+
+    .chart-card {
+        padding: 14px;
+    }
+
+    .chart-card__canvas {
+        height: 170px;
+    }
+
+    .chart-card__canvas--doughnut {
+        height: 200px;
+    }
+}

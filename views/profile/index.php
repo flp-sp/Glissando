@@ -33,6 +33,15 @@
             $subscriberCount = (int) $subscriptionService->getSubscriptionNumber((int) $profileUser['id']);
         }
     }
+
+    // A rota /profile injeta $dashboardData; os padrões mantêm a view utilizável isoladamente
+    $dashboardData = $dashboardData ?? [
+        'totalViews'  => 0,
+        'meanViews'   => 0,
+        'meanLikes'   => 0,
+        'subscribers' => (int) $subscriberCount,
+        'topMusics'   => [],
+    ];
 ?>
 
 <!DOCTYPE html>
@@ -44,6 +53,7 @@
     <link rel="stylesheet" href="/assets/css/index.css">
     <link rel="stylesheet" href="/assets/css/app.css">
     <link rel="stylesheet" href="/assets/css/profile.css">
+    <link rel="stylesheet" href="/assets/css/dashboard.css">
 </head>
 <body>
     <main class="app-wrap profile-wrap">
@@ -81,12 +91,56 @@
                         <h3 id="panel-title">Painel do artista</h3>
                     </div>
 
-                    <div class="profile__chart" role="img" aria-label="Espaço reservado para o gráfico de atividade">
-                        <span class="profile__chart-note" aria-hidden="true">♬</span>
-                        <p>O gráfico entra em breve &mdash; estamos afinando essa batida.</p>
-                    </div>
+                    <div class="dashboard">
+                        <ul class="kpi-grid" aria-label="Indicadores da sua trilha">
+                            <li class="kpi-card">
+                                <span class="kpi-card__icon" aria-hidden="true">&#9654;</span>
+                                <span class="kpi-card__label">Visualizações</span>
+                                <strong class="kpi-card__value"><?= number_format($dashboardData['totalViews'], 0, ',', '.') ?></strong>
+                                <span class="kpi-card__hint">acessos às suas faixas</span>
+                            </li>
+                            <li class="kpi-card">
+                                <span class="kpi-card__icon" aria-hidden="true">&#9835;</span>
+                                <span class="kpi-card__label">Média de views</span>
+                                <strong class="kpi-card__value"><?= number_format($dashboardData['meanViews'], 0, ',', '.') ?></strong>
+                                <span class="kpi-card__hint">por faixa enviada</span>
+                            </li>
+                            <li class="kpi-card">
+                                <span class="kpi-card__icon" aria-hidden="true">&#9829;</span>
+                                <span class="kpi-card__label">Curtidas</span>
+                                <strong class="kpi-card__value"><?= number_format($dashboardData['meanLikes'], 0, ',', '.') ?></strong>
+                                <span class="kpi-card__hint">por faixa enviada</span>
+                            </li>
+                            <li class="kpi-card">
+                                <span class="kpi-card__icon" aria-hidden="true">&#9834;</span>
+                                <span class="kpi-card__label">Inscritos</span>
+                                <strong class="kpi-card__value"><?= number_format($dashboardData['subscribers'], 0, ',', '.') ?></strong>
+                                <span class="kpi-card__hint">ouvindo sua trilha</span>
+                            </li>
+                        </ul>
 
-                    <p class="profile__hint">Enquanto isso, sua trilha continua no acervo.</p>
+                        <?php if ($dashboardData['topMusics']): ?>
+                            <div class="dashboard__charts">
+                                <section class="chart-card" aria-labelledby="chart-top-title">
+                                    <p class="sub">No destaque</p>
+                                    <h4 id="chart-top-title">Faixas mais ouvidas</h4>
+                                    <div class="chart-card__canvas">
+                                        <canvas id="chart-top-musics" role="img" aria-label="Barras com as três faixas mais ouvidas"></canvas>
+                                    </div>
+                                </section>
+
+                                <section class="chart-card" aria-labelledby="chart-share-title">
+                                    <p class="sub">Na mistura</p>
+                                    <h4 id="chart-share-title">Participação nas views</h4>
+                                    <div class="chart-card__canvas chart-card__canvas--doughnut">
+                                        <canvas id="chart-views-share" role="img" aria-label="Rosca com a participação das faixas nas visualizações"></canvas>
+                                    </div>
+                                </section>
+                            </div>
+                        <?php else: ?>
+                            <p class="dashboard__empty">Sua trilha ainda está sendo afinada &mdash; envie faixas para ver o gráfico.</p>
+                        <?php endif; ?>
+                    </div>
                 </section>
             <?php endif; ?>
 
@@ -142,5 +196,110 @@
             </section>
         <?php endif; ?>
     </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof Chart === 'undefined') {
+                return;
+            }
+
+            const barCanvas = document.getElementById('chart-top-musics');
+            const doughnutCanvas = document.getElementById('chart-views-share');
+            if (!barCanvas || !doughnutCanvas) {
+                return;
+            }
+
+            const topMusics = <?= json_encode($dashboardData['topMusics'], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+            const totalViews = <?= (int) $dashboardData['totalViews'] ?>;
+
+            const labels = topMusics.map((music) => String(music.name ?? 'Faixa'));
+            const values = topMusics.map((music) => Number(music.views ?? 0));
+
+            const chartColors = ['#f3a36b', '#cd5b51', '#554865'];
+            const textColor = '#e9dfcc';
+            const gridColor = 'rgba(233, 223, 204, 0.08)';
+
+            new Chart(barCanvas, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: chartColors.slice(0, values.length),
+                        borderRadius: 999,
+                        borderSkipped: false,
+                        barThickness: 18,
+                    }],
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => ` ${context.parsed.x.toLocaleString('pt-BR')} visualizações`,
+                            },
+                        },
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: { color: textColor, precision: 0, font: { size: 11 } },
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: textColor, font: { size: 12 } },
+                        },
+                    },
+                },
+            });
+
+            const otherViews = Math.max(0, totalViews - values.reduce((sum, value) => sum + value, 0));
+            const shareLabels = [...labels];
+            const shareValues = [...values];
+
+            if (otherViews > 0) {
+                shareLabels.push('Outras');
+                shareValues.push(otherViews);
+            }
+
+            new Chart(doughnutCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: shareLabels,
+                    datasets: [{
+                        data: shareValues,
+                        backgroundColor: [...chartColors, 'rgba(233, 223, 204, 0.35)'].slice(0, shareValues.length),
+                        borderColor: 'rgba(53, 38, 48, 0.9)',
+                        borderWidth: 2,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '66%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: textColor, boxWidth: 10, boxHeight: 10, padding: 14, font: { size: 11 } },
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const sum = context.dataset.data.reduce((total, value) => total + value, 0);
+                                    const percent = sum ? Math.round((context.parsed / sum) * 100) : 0;
+                                    return ` ${context.label}: ${percent}%`;
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+        });
+    </script>
 </body>
 </html>
